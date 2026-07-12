@@ -1,0 +1,31 @@
+.spinner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+
+  &--inline .spinner__circle {
+    width: 1.05rem;
+    height: 1.05rem;
+    border-width: 2px;
+  }
+
+  &__circle {
+    width: 1.6rem;
+    height: 1.6rem;
+    border: 3px solid rgba(255, 255, 255, 0.35);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spinner-rotate 0.7s linear infinite;
+  }
+
+  &__label {
+    font-size: 0.9rem;
+    color: inherit;
+  }
+}
+
+@keyframes spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}

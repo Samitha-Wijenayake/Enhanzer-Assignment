@@ -1,0 +1,175 @@
+<div class="pb">
+  <div class="pb__head">
+    <h1 class="pb__title">Purchase Bill</h1>
+    <p class="pb__subtitle">Add items to build the bill. Totals update automatically.</p>
+  </div>
+
+  @if (loadError()) {
+    <app-alert variant="error" [message]="loadError()!" />
+  }
+
+  <div class="pb__grid">
+    <!-- Entry form -->
+    <section class="pb__form card">
+      <h2 class="pb__section-title">Add item</h2>
+
+      <div class="field" [class.field--invalid]="itemTouched() && !itemValue().trim()">
+        <label class="field__label" for="item">
+          Item
+          @if (loadingItems()) { <app-spinner [inline]="true" label="" /> }
+        </label>
+        <app-autocomplete
+          inputId="item"
+          placeholder="Start typing a fruit…"
+          [options]="items()"
+          [invalid]="itemTouched() && !itemValue().trim()"
+          [value]="itemValue()"
+          (valueChange)="onItemChange($event)"
+        />
+        @if (itemTouched() && !itemValue().trim()) {
+          <span class="field__error">Item is required.</span>
+        }
+      </div>
+
+      <form class="pb__fields" [formGroup]="form">
+        <div class="field" [class.field--invalid]="form.controls.batch.invalid && form.controls.batch.touched">
+          <label class="field__label" for="batch">
+            Batch (location)
+            @if (loadingLocations()) { <app-spinner [inline]="true" label="" /> }
+          </label>
+          <select id="batch" class="field__control" formControlName="batch">
+            <option value="" disabled>Select a location…</option>
+            @for (loc of locations(); track loc.locationCode) {
+              <option [value]="loc.locationName">{{ loc.locationName }}</option>
+            }
+          </select>
+          @if (form.controls.batch.touched && form.controls.batch.hasError('required')) {
+            <span class="field__error">Batch is required.</span>
+          }
+        </div>
+
+        <div class="pb__row">
+          <div class="field" [class.field--invalid]="form.controls.standardCost.invalid && form.controls.standardCost.touched">
+            <label class="field__label" for="standardCost">Standard Cost</label>
+            <input id="standardCost" type="number" min="0" step="0.01" class="field__control" formControlName="standardCost" />
+          </div>
+
+          <div class="field" [class.field--invalid]="form.controls.standardPrice.invalid && form.controls.standardPrice.touched">
+            <label class="field__label" for="standardPrice">Standard Price</label>
+            <input id="standardPrice" type="number" min="0" step="0.01" class="field__control" formControlName="standardPrice" />
+          </div>
+        </div>
+
+        <div class="pb__row">
+          <div class="field" [class.field--invalid]="form.controls.quantity.invalid && form.controls.quantity.touched">
+            <label class="field__label" for="quantity">Quantity</label>
+            <input id="quantity" type="number" min="1" step="1" class="field__control" formControlName="quantity" />
+            @if (form.controls.quantity.touched && form.controls.quantity.hasError('min')) {
+              <span class="field__error">Quantity must be at least 1.</span>
+            }
+          </div>
+
+          <div class="field" [class.field--invalid]="form.controls.discountPercentage.invalid && form.controls.discountPercentage.touched">
+            <label class="field__label" for="discount">Discount %</label>
+            <input id="discount" type="number" min="0" max="100" step="0.01" class="field__control" formControlName="discountPercentage" />
+            @if (form.controls.discountPercentage.touched && form.controls.discountPercentage.hasError('max')) {
+              <span class="field__error">Discount cannot exceed 100%.</span>
+            }
+          </div>
+        </div>
+
+        <div class="pb__preview">
+          <div class="pb__preview-item">
+            <span class="pb__preview-label">Total Cost</span>
+            <span class="pb__preview-value">{{ preview().totalCost | number: '1.2-2' }}</span>
+          </div>
+          <div class="pb__preview-item">
+            <span class="pb__preview-label">Total Selling</span>
+            <span class="pb__preview-value">{{ preview().totalSelling | number: '1.2-2' }}</span>
+          </div>
+        </div>
+
+        @if (formError()) {
+          <app-alert variant="warning" [message]="formError()!" />
+        }
+
+        <button type="button" class="btn btn--primary pb__add" (click)="addLine()">+ Add</button>
+      </form>
+    </section>
+
+    <!-- Table + summary -->
+    <section class="pb__result">
+      <div class="pb__table-card card">
+        <div class="pb__table-head">
+          <h2 class="pb__section-title">Items</h2>
+          @if (lines().length > 0) {
+            <button type="button" class="btn btn--ghost pb__clear" (click)="clearAll()">Clear all</button>
+          }
+        </div>
+
+        <div class="pb__table-wrap">
+          <table class="pb__table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Item</th>
+                <th>Batch</th>
+                <th class="num">Std Cost</th>
+                <th class="num">Std Price</th>
+                <th class="num">Qty</th>
+                <th class="num">Disc %</th>
+                <th class="num">Total Cost</th>
+                <th class="num">Total Selling</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (line of lines(); track $index; let i = $index) {
+                <tr>
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ line.item }}</td>
+                  <td>{{ line.batch }}</td>
+                  <td class="num">{{ line.standardCost | number: '1.2-2' }}</td>
+                  <td class="num">{{ line.standardPrice | number: '1.2-2' }}</td>
+                  <td class="num">{{ line.quantity }}</td>
+                  <td class="num">{{ line.discountPercentage | number: '1.0-2' }}</td>
+                  <td class="num">{{ line.totalCost | number: '1.2-2' }}</td>
+                  <td class="num">{{ line.totalSelling | number: '1.2-2' }}</td>
+                  <td>
+                    <button type="button" class="pb__remove" (click)="removeLine(i)" aria-label="Remove item">✕</button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr class="pb__empty">
+                  <td colspan="10">No items added yet. Use the form to add your first item.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="pb__summary card">
+        <h2 class="pb__section-title">Item Summary</h2>
+        <div class="pb__summary-grid">
+          <div class="pb__summary-item">
+            <span class="pb__summary-label">Total Items</span>
+            <span class="pb__summary-value">{{ summary().totalItems }}</span>
+          </div>
+          <div class="pb__summary-item">
+            <span class="pb__summary-label">Total Quantity</span>
+            <span class="pb__summary-value">{{ summary().totalQuantity }}</span>
+          </div>
+          <div class="pb__summary-item">
+            <span class="pb__summary-label">Total Cost</span>
+            <span class="pb__summary-value">{{ summary().totalCost | number: '1.2-2' }}</span>
+          </div>
+          <div class="pb__summary-item">
+            <span class="pb__summary-label">Total Selling</span>
+            <span class="pb__summary-value">{{ summary().totalSelling | number: '1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

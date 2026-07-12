@@ -1,0 +1,34 @@
+<div class="autocomplete">
+  <input
+    [id]="inputId()"
+    type="text"
+    class="field__control"
+    [class.field__control--invalid]="invalid()"
+    [value]="value()"
+    [placeholder]="placeholder()"
+    autocomplete="off"
+    role="combobox"
+    aria-autocomplete="list"
+    [attr.aria-expanded]="open()"
+    (input)="onInput($event)"
+    (focus)="onFocus()"
+    (keydown)="onKeydown($event)"
+  />
+
+  @if (open() && filtered().length > 0) {
+    <ul class="autocomplete__list" role="listbox">
+      @for (option of filtered(); track option; let i = $index) {
+        <li
+          class="autocomplete__option"
+          [class.autocomplete__option--active]="i === activeIndex()"
+          role="option"
+          [attr.aria-selected]="option === value()"
+          (mousedown)="select(option)"
+          (mouseenter)="activeIndex.set(i)"
+        >
+          {{ option }}
+        </li>
+      }
+    </ul>
+  }
+</div>

@@ -1,0 +1,19 @@
+<div class="app-shell">
+  <header class="app-header">
+    <div class="app-header__brand">
+      <span class="app-header__logo">E</span>
+      <span class="app-header__title">Enhanzer POS</span>
+    </div>
+
+    @if (auth.isAuthenticated()) {
+      <div class="app-header__user">
+        <span class="app-header__username">{{ auth.username() }}</span>
+        <button type="button" class="app-header__logout" (click)="logout()">Log out</button>
+      </div>
+    }
+  </header>
+
+  <main class="app-main">
+    <router-outlet />
+  </main>
+</div>

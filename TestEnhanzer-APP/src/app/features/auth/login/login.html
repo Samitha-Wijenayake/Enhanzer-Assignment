@@ -1,0 +1,66 @@
+<div class="login">
+  <section class="login__card card">
+    <div class="login__brand">
+      <span class="login__logo">E</span>
+      <h1 class="login__title">Welcome back</h1>
+      <p class="login__subtitle">Sign in to continue to the POS dashboard</p>
+    </div>
+
+    @if (errorMessage()) {
+      <app-alert variant="error" [message]="errorMessage()!" />
+    }
+
+    <form class="login__form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="field" [class.field--invalid]="email.invalid && email.touched">
+        <label class="field__label" for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          class="field__control"
+          formControlName="email"
+          placeholder="you@example.com"
+          autocomplete="username"
+        />
+        @if (email.touched && email.hasError('required')) {
+          <span class="field__error">Email is required.</span>
+        } @else if (email.touched && email.hasError('email')) {
+          <span class="field__error">Enter a valid email address.</span>
+        }
+      </div>
+
+      <div class="field" [class.field--invalid]="password.invalid && password.touched">
+        <label class="field__label" for="password">Password</label>
+        <div class="login__password">
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            class="field__control"
+            formControlName="password"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            class="login__password-toggle"
+            (click)="togglePassword()"
+            [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+          >
+            {{ showPassword() ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+        @if (password.touched && password.hasError('required')) {
+          <span class="field__error">Password is required.</span>
+        }
+      </div>
+
+      <button type="submit" class="btn btn--primary login__submit" [disabled]="loading()">
+        @if (loading()) {
+          <app-spinner [inline]="true" />
+          <span>Signing in…</span>
+        } @else {
+          <span>Sign in</span>
+        }
+      </button>
+    </form>
+  </section>
+</div>
